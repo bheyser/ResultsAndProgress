@@ -47,6 +47,18 @@ class ilResultsAndProgressPlugin extends ilTestExportPlugin {
 	 */
 	protected function buildExportFile(ilTestExportFilename $filename)
 	{
+		if( ilResultsAndProgressPlugin::isIlias51orLower() )
+		{
+			$this->includeClass('51/PHPExcel-1.8/Classes/PHPExcel.php');
+			$this->includeClass('51/class.ilExcel52x.php');
+			$this->includeClass('51/class.ilAssExcelFormatHelper52x.php');
+		}
+		else
+		{
+			require_once 'Modules/TestQuestionPool/classes/class.ilAssExcelFormatHelper.php';
+		}
+		
+		
 		$this->includeClass('class.ilResultsAndProgressExportBuilder.php');
 		$exportBuilder = new ilResultsAndProgressExportBuilder($this->getTest());
 		$exportBuilder->buildExportFile();
@@ -55,6 +67,11 @@ class ilResultsAndProgressPlugin extends ilTestExportPlugin {
 	public static function isIlias54orGreater()
 	{
 		return version_compare(ILIAS_VERSION_NUMERIC, '5.4.0', '>=');
+	}
+	
+	public static function isIlias51orLower()
+	{
+		return version_compare(ILIAS_VERSION_NUMERIC, '5.2.0', '<');
 	}
 	
 	protected function phpExcelCode(ilTestExportFilename $filename)

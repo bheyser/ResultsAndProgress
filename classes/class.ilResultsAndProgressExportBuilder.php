@@ -19,9 +19,9 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 	const EXTRA_SHEET_MAX_PARTICIPANTS = 0;
 	
 	/**
-	 * @var ILIAS\DI\Container
+	 * @var ilLanguage
 	 */
-	protected $dic;
+	protected $lang;
 	
 	/**
 	 * @var ilTestParticipantData
@@ -35,8 +35,6 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 	{
 		parent::__construct($testObject, 'results');
 		
-		$this->dic = $GLOBALS['DIC'];
-		
 		if( ilResultsAndProgressPlugin::isIlias54orGreater() )
 		{
 			$this->test_obj->setAccessFilteredParticipantList(
@@ -44,10 +42,13 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 			);
 		}
 		
-		$this->participantData = new ilTestParticipantData($this->dic->database(), $this->dic->language());
+		$this->lang = isset($GLOBALS['DIC']) ? $GLOBALS['DIC']['lng'] : $GLOBALS['lng'];
+		$db = isset($GLOBALS['DIC']) ? $GLOBALS['DIC']['ilDB'] : $GLOBALS['ilDB'];
+		
+		$this->participantData = new ilTestParticipantData($db, $this->lang);
 		$this->participantData->load($this->test_obj->getTestId());
 		
-		$this->dic->language()->loadLanguageModule('trac');
+		$this->lang->loadLanguageModule('trac');
 	}
 	
 	/**
@@ -80,12 +81,8 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 	 */
 	public function exportToExcel($deliver = TRUE, $filterby = "", $filtertext = "", $passedonly = FALSE)
 	{
-		$lng = $this->dic->language();
-		
-		require_once 'Modules/TestQuestionPool/classes/class.ilAssExcelFormatHelper.php';
-		
 		$worksheet = new ilAssExcelFormatHelper();
-		$worksheet->addSheet($lng->txt('tst_results'));
+		$worksheet->addSheet($this->lang->txt('tst_results'));
 		
 		$additionalFields = $this->test_obj->getEvaluationAdditionalFields();
 		
@@ -94,47 +91,47 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 		
 		if($this->test_obj->getAnonymity())
 		{
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('counter'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('counter'));
 		}
 		else
 		{
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('name'));
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('login'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('name'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('login'));
 		}
 		
 		if(count($additionalFields))
 		{
 			foreach($additionalFields as $fieldname)
 			{
-				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt($fieldname));
+				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt($fieldname));
 			}
 		}
 		
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_resultspoints'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('maximum_points'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_resultsmarks'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_resultspoints'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('maximum_points'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_resultsmarks'));
 		
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('learning_progress'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('learning_progress'));
 		
 		if($this->test_obj->getECTSOutput())
 		{
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('ects_grade'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('ects_grade'));
 		}
 		
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_qworkedthrough'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_qmax'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_pworkedthrough'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_timeofwork'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_atimeofwork'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_firstvisit'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_lastvisit'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_mark_median'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_rank_participant'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_rank_median'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_total_participants'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('tst_stat_result_median'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('scored_pass'));
-		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('pass'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_qworkedthrough'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_qmax'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_pworkedthrough'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_timeofwork'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_atimeofwork'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_firstvisit'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_lastvisit'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_mark_median'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_rank_participant'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_rank_median'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_total_participants'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('tst_stat_result_median'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('scored_pass'));
+		$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('pass'));
 		
 		$worksheet->setBold('A' . $row . ':' . $worksheet->getColumnCoord($col - 1) . $row);
 		
@@ -174,7 +171,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				{
 					if(strcmp($fieldname, 'gender') == 0)
 					{
-						$worksheet->setCell($row, $col++, $lng->txt('gender_' . $userfields[$fieldname]));
+						$worksheet->setCell($row, $col++, $this->lang->txt('gender_' . $userfields[$fieldname]));
 					}
 					else
 					{
@@ -329,22 +326,22 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 			$allusersheet = false;
 			$pages = 0;
 			
-			$worksheet->addSheet($lng->txt('eval_all_users'));
+			$worksheet->addSheet($this->lang->txt('eval_all_users'));
 			
 			$col = 0;
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $lng->txt('name'));
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('login'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $this->lang->txt('name'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('login'));
 			if(count($additionalFields))
 			{
 				foreach($additionalFields as $fieldname)
 				{
 					if(strcmp($fieldname, "matriculation") == 0)
 					{
-						$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('matriculation'));
+						$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('matriculation'));
 					}
 				}
 			}
-			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('test'));
+			$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('test'));
 			foreach($titles as $title)
 			{
 				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row, $title);
@@ -420,22 +417,22 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				$allusersheet = false;
 				$pages = 0;
 				
-				$worksheet->addSheet($lng->txt('eval_all_users'). ' (2)');
+				$worksheet->addSheet($this->lang->txt('eval_all_users'). ' (2)');
 				
 				$col = 0;
-				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('name'));
-				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('login'));
+				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('name'));
+				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('login'));
 				if (count($additionalFields))
 				{
 					foreach ($additionalFields as $fieldname)
 					{
 						if (strcmp($fieldname, "matriculation") == 0)
 						{
-							$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('matriculation'));
+							$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('matriculation'));
 						}
 					}
 				}
-				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $lng->txt('test'));
+				$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $this->lang->txt('test'));
 				foreach($titles as $title)
 				{
 					$worksheet->setFormattedExcelTitle($worksheet->getColumnCoord($col++) . $row,  $title);
@@ -523,7 +520,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				{
 					if(!$allusersheet || ($pages-1) < floor($row / 64000))
 					{
-						$worksheet->addSheet($lng->txt("eval_all_users") . (($pages > 0) ? " (".($pages+1).")" : ""));
+						$worksheet->addSheet($this->lang->txt("eval_all_users") . (($pages > 0) ? " (".($pages+1).")" : ""));
 						$allusersheet = true;
 						$row = 1;
 						$pages++;
@@ -536,7 +533,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				
 				$pass = $userdata->getScoredPass();
 				$row = ($allusersheet) ? $row : 1;
-				$worksheet->setCell($row, 0, sprintf($lng->txt("tst_result_user_name_pass"), $pass+1, $userdata->getName()));
+				$worksheet->setCell($row, 0, sprintf($this->lang->txt("tst_result_user_name_pass"), $pass+1, $userdata->getName()));
 				$worksheet->setBold($worksheet->getColumnCoord(0) . $row);
 				$row += 2;
 				if(is_object($userdata) && is_array($userdata->getQuestions($pass)))
@@ -583,21 +580,19 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 	 */
 	function exportToCSV($deliver = TRUE, $filterby = "", $filtertext = "", $passedonly = FALSE)
 	{
-		$lng = $this->dic->language();
-		
 		$rows = array();
 		$datarow = array();
 		$col = 1;
 		if ($this->test_obj->getAnonymity())
 		{
-			array_push($datarow, $lng->txt("counter"));
+			array_push($datarow, $this->lang->txt("counter"));
 			$col++;
 		}
 		else
 		{
-			array_push($datarow, $lng->txt("name"));
+			array_push($datarow, $this->lang->txt("name"));
 			$col++;
-			array_push($datarow, $lng->txt("login"));
+			array_push($datarow, $this->lang->txt("login"));
 			$col++;
 		}
 		$additionalFields = $this->test_obj->getEvaluationAdditionalFields();
@@ -605,54 +600,54 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 		{
 			foreach ($additionalFields as $fieldname)
 			{
-				array_push($datarow, $lng->txt($fieldname));
+				array_push($datarow, $this->lang->txt($fieldname));
 				$col++;
 			}
 		}
-		array_push($datarow, $lng->txt("tst_stat_result_resultspoints"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_resultspoints"));
 		$col++;
-		array_push($datarow, $lng->txt("maximum_points"));
+		array_push($datarow, $this->lang->txt("maximum_points"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_resultsmarks"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_resultsmarks"));
 		$col++;
 		
-		array_push($datarow, $lng->txt("learning_progress"));
+		array_push($datarow, $this->lang->txt("learning_progress"));
 		$col++;
 		
 		if ($this->test_obj->getECTSOutput())
 		{
-			array_push($datarow, $lng->txt("ects_grade"));
+			array_push($datarow, $this->lang->txt("ects_grade"));
 			$col++;
 		}
-		array_push($datarow, $lng->txt("tst_stat_result_qworkedthrough"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_qworkedthrough"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_qmax"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_qmax"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_pworkedthrough"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_pworkedthrough"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_timeofwork"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_timeofwork"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_atimeofwork"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_atimeofwork"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_firstvisit"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_firstvisit"));
 		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_lastvisit"));
-		$col++;
-		
-		array_push($datarow, $lng->txt("tst_stat_result_mark_median"));
-		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_rank_participant"));
-		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_rank_median"));
-		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_total_participants"));
-		$col++;
-		array_push($datarow, $lng->txt("tst_stat_result_median"));
-		$col++;
-		array_push($datarow, $lng->txt("scored_pass"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_lastvisit"));
 		$col++;
 		
-		array_push($datarow, $lng->txt("pass"));
+		array_push($datarow, $this->lang->txt("tst_stat_result_mark_median"));
+		$col++;
+		array_push($datarow, $this->lang->txt("tst_stat_result_rank_participant"));
+		$col++;
+		array_push($datarow, $this->lang->txt("tst_stat_result_rank_median"));
+		$col++;
+		array_push($datarow, $this->lang->txt("tst_stat_result_total_participants"));
+		$col++;
+		array_push($datarow, $this->lang->txt("tst_stat_result_median"));
+		$col++;
+		array_push($datarow, $this->lang->txt("scored_pass"));
+		$col++;
+		
+		array_push($datarow, $this->lang->txt("pass"));
 		$col++;
 		
 		$data =& $this->test_obj->getCompleteEvaluationData(TRUE, $filterby, $filtertext);
@@ -688,7 +683,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 					{
 						if (strcmp($fieldname, "gender") == 0)
 						{
-							array_push($datarow2, $lng->txt("gender_" . $userfields[$fieldname]));
+							array_push($datarow2, $this->lang->txt("gender_" . $userfields[$fieldname]));
 						}
 						else
 						{
