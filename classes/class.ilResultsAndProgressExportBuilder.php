@@ -193,7 +193,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 			
 			$worksheet->setCell($row, $col++, $data->getParticipant($active_id)->getQuestionsWorkedThrough());
 			$worksheet->setCell($row, $col++, $data->getParticipant($active_id)->getNumberOfQuestions());
-			$worksheet->setCell($row, $col++, ($data->getParticipant($active_id)->getQuestionsWorkedThroughInPercent() / 100.0) . '%');
+			$worksheet->setCell($row, $col++, ($data->getParticipant($active_id)->getQuestionsWorkedThroughInPercent()) . '%');
 			
 			$time = $data->getParticipant($active_id)->getTimeOfWork();
 			$time_seconds = $time;
@@ -703,7 +703,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				}
 				array_push($datarow2, $data->getParticipant($active_id)->getQuestionsWorkedThrough());
 				array_push($datarow2, $data->getParticipant($active_id)->getNumberOfQuestions());
-				array_push($datarow2, $data->getParticipant($active_id)->getQuestionsWorkedThroughInPercent() / 100.0);
+				array_push($datarow2, $data->getParticipant($active_id)->getQuestionsWorkedThroughInPercent().'%');
 				$time = $data->getParticipant($active_id)->getTimeOfWork();
 				$time_seconds = $time;
 				$time_hours    = floor($time_seconds/3600);

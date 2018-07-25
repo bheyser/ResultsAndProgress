@@ -49,6 +49,7 @@ class ilResultsAndProgressPlugin extends ilTestExportPlugin {
 	{
 		if( ilResultsAndProgressPlugin::isIlias51orLower() )
 		{
+			if( !defined('EXCEL_BACKGROUND_COLOR') ) define('EXCEL_BACKGROUND_COLOR', 'C0C0C0');
 			$this->includeClass('51/PHPExcel-1.8/Classes/PHPExcel.php');
 			$this->includeClass('51/class.ilExcel52x.php');
 			$this->includeClass('51/class.ilAssExcelFormatHelper52x.php');
@@ -61,7 +62,14 @@ class ilResultsAndProgressPlugin extends ilTestExportPlugin {
 		
 		$this->includeClass('class.ilResultsAndProgressExportBuilder.php');
 		$exportBuilder = new ilResultsAndProgressExportBuilder($this->getTest());
-		$exportBuilder->buildExportFile();
+		$absoluteFilenameCSV = $exportBuilder->buildExportFile();
+		
+		if( ilResultsAndProgressPlugin::isIlias51orLower() )
+		{
+			$absoluteExcelFilename51 = substr($absoluteFilenameCSV, 0, -3) . 'xls';
+			$absoluteExcelFilenameNEEDED = substr($absoluteFilenameCSV, 0, -3) . 'xlsx';
+			rename($absoluteExcelFilename51, $absoluteExcelFilenameNEEDED);
+		}
 	}
 	
 	public static function isIlias54orGreater()
