@@ -182,7 +182,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 			
 			$worksheet->setCell($row, $col++, $data->getParticipant($active_id)->getReached());
 			$worksheet->setCell($row, $col++, $data->getParticipant($active_id)->getMaxpoints());
-			$worksheet->setCell($row, $col++, $data->getParticipant($active_id)->getMark());
+			$worksheet->setCell($row, $col++, $this->getMarkString($data->getParticipant($active_id)));
 			
 			$worksheet->setCell($row, $col++, $this->getLearningProgressByActiveId($active_id));
 			
@@ -693,7 +693,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				}
 				array_push($datarow2, $data->getParticipant($active_id)->getReached());
 				array_push($datarow2, $data->getParticipant($active_id)->getMaxpoints());
-				array_push($datarow2, $data->getParticipant($active_id)->getMark());
+				array_push($datarow2, $this->getMarkString($data->getParticipant($active_id)));
 				
 				array_push($datarow2, $this->getLearningProgressByActiveId($active_id));
 				
@@ -809,5 +809,13 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 		}
 	}
 	
-	
+	protected function getMarkString(ilTestEvaluationUserData $userData)
+	{
+		if( strlen($userData->getMark()) )
+		{
+			return $userData->getMark();
+		}
+		
+		return $userData->getMarkOfficial();
+	}
 }
