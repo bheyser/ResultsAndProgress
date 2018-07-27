@@ -821,6 +821,6 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 	
 	protected function formatPercent($numValue)
 	{
-		return number_format($numValue, 2, ',', '.');
+		return number_format($numValue, 2, ',', '.').'%';
 	}
 }
