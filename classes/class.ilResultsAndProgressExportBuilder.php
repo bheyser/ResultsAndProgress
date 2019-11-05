@@ -242,7 +242,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 			for($pass = 0; $pass <= $data->getParticipant($active_id)->getLastPass(); $pass++)
 			{
 				$col = $startcol;
-				$finishdate = $this->test_obj->getPassFinishDate($active_id, $pass);
+                $finishdate = $this->getPassFinishTS($active_id, $pass);
 				if($finishdate > 0)
 				{
 					if ($pass > 0)
@@ -757,8 +757,9 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 				}
 				for ($pass = 0; $pass <= $data->getParticipant($active_id)->getLastPass(); $pass++)
 				{
-					$finishdate = $this->test_obj->getPassFinishDate($active_id, $pass);
-					if ($finishdate > 0)
+                    $finishdate = $this->getPassFinishTS($active_id, $pass);
+
+                    if ($finishdate > 0)
 					{
 						if ($pass > 0)
 						{
@@ -808,7 +809,7 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 			return $csv;
 		}
 	}
-	
+
 	protected function getMarkString(ilTestEvaluationUserData $userData)
 	{
 		if( strlen($userData->getMark()) )
@@ -823,4 +824,20 @@ class ilResultsAndProgressExportBuilder extends ilTestExport
 	{
 		return number_format($numValue, 2, ',', '.').'%';
 	}
+
+    /**
+     * @param $active_id
+     * @param $pass
+     *
+     * @return int
+     */
+    protected function getPassFinishTS($active_id, $pass)
+    {
+        if (method_exists($this->test_obj, 'getPassFinishDate'))
+        {
+            return $this->test_obj->getPassFinishDate($active_id, $pass);
+        }
+
+        return ilObjTest::lookupLastTestPassAccess($active_id, $pass);
+    }
 }
